@@ -5,12 +5,6 @@ import "net"
 import "os"
 import "strings"
 
-/*
-	Wait for Request and Respond by sending  the same 
-	content received at Server and then close the 
-	connection with that client.
-*/
-
 const BUFF_SIZE int32 = 512
 
 // Create a global "Map" (Key-Value Store) , so that it is available to all clients
