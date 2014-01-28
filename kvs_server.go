@@ -3,6 +3,7 @@ package main
 import "fmt"
 import "net"
 import "os"
+import "strings"
 
 /*
 	Wait for Request and Respond by sending  the same 
@@ -28,6 +29,9 @@ checkError(err)
 listener, err := net.ListenTCP("tcp",tcpAddr)
 checkError(err)
 
+// Display Message that "Server started successfully"
+fmt.Println("\nServer started Successfully!!!\nPort Number is '",service,"'")
+
 // Run Server Program forever
 for{
 	conn, err := listener.Accept()
@@ -50,58 +54,72 @@ func handleClient(conn net.Conn){
 
 	
 	// close connection on exit from method
-	defer conn.Close()
+	//defer conn.Close()
 	
-	var buf[BUFF_SIZE] byte
+	var buf[] byte = make([]byte, BUFF_SIZE)
 		
 	for{
+		// #test
+		fmt.Println("\nHi")
+
+		var err error
+
 		// Read upto BUFF_SIZE bytes
 		n,err := conn.Read(buf[0:])
 	
 		if err != nil{
-			conn.Write(buf[]("Error in 'reading' data at server."))
+			conn.Write([]byte("Error in 'reading' data at server."))
 			return
 		}
 		
 		// -------------------
-		// Logic at Server end
+		// Logic at Server
 		// -------------------
 			
-		request := buf[0:n]
+		request := string(buf[0:n])
+		
+		// #test Print Request
+		//fmt.Println("\nRequest ",request, "\n")
+		
 		comm := strings.Split(request, " ")
 		
-		var err error
 		
 		if comm[0] == "set"{
 			kvs[comm[1]] = comm[2]
-			_, err = conn.Write(comm[1] , " got added successfully.")
+			_, err = conn.Write([]byte(comm[1] + " got added successfully."))
+			checkError(err)
 		}else if comm[0] == "get"{
 			value,status := kvs[comm[1]]
 			if status == true {
-				_, err = conn.Write(value)
+				_, err := conn.Write([]byte(value))
+				checkError(err)
 			}else{
-				_, err = conn.Write("Error in 'get'.")
+				_, err := conn.Write([]byte("Error!!! \nNo key exists."))
+				checkError(err)
 				return
 			}
 		}else if comm[0] == "delete"{
 			delete(kvs,comm[1])
-			_, err = conn.Write(comm[1]," got deleted.")
+			_, err := conn.Write([]byte(comm[1] + " got deleted."))
+			checkError(err)
 		}
 		
-		//fmt.Println(string(buf[0:]))
-		//_, err2 := conn.Write(buf[0:n])
 		
 		if err != nil{
-			conn.Write("Error Occurred somewhere.")
+			conn.Write([]byte("Error Occurred in Server somewhere."))
 			return
 		}
+		
+		fmt.Println("At the End in Server")	
+		conn.Close()
+
 	}
 
 }
 
 func checkError(err error){
 	if err != nil{
-		fmt.Fprintf(os.Stderr,"Fatal error: %s ",err.Error())
+		fmt.Fprintf(os.Stderr,"Fatal error in Server : %s ",err.Error())
 		os.Exit(1)
 	}
 }
