@@ -77,71 +77,34 @@ for{
 	}
 	
 	comm := strings.Split(input, " ")
-	fmt.Println("0 ",comm[0], " 1 ",comm[1]," 2 ",comm[2])
 	
 
 	if comm[0] == "get" || comm[0] == "set" || comm[0] == "delete" {
+
 		// Send Request
 		_, err = conn.Write([]byte(input))
 		checkError(err)
+
+		fmt.Println("\n1")
 
 		// Read Response
 		result,err := ioutil.ReadAll(conn)
 		checkError(err)
 
+		fmt.Println("\n2")
+
 		// Printed Message
-		fmt.Println(string(result))	
+		fmt.Println("\nResponse ",string(result))	
 	}else{
 		// Print error and Ask for new user input
-		fmt.Println("\nInvalid Command '",input[0],"'")
+		fmt.Println("\nInvalid Command '",comm[0],"'")
 	}
 
-	
 }
 
 closing_Msg()
 
 os.Exit(0)
-
-
-//abc := strings.Split(input, " ")
-
-//fmt.Println("\n",abc)
-
-/*
-        
-        
-        
-	if len(os.Args) != 2{
-		fmt.Fprintf(os.Stderr,"Usage: %s hostname\n",os.Args[0])
-		fmt.Println("Usage: ",os.Args[0], "hostname")
-		os.Exit(1)
-	}
-
-service := os.Args[1]
-
-// Resolve Server Address
-tcpAddr,err := net.ResolveTCPAddr("tcp4",service)
-checkError(err)
-
-// Create / Dial TCP connection
-conn,err := net.DialTCP("tcp",nil,tcpAddr)
-checkError(err)
-
-// Sent Request
-_, err = conn.Write([]byte("HEAD / HTTP/1.0\r\n\r\n"))
-checkError(err)
-
-// Read Response
-result,err := ioutil.ReadAll(conn)
-checkError(err)
-
-// Printed Message
-fmt.Println(string(result))
-
-*/
-
-
 
 }
 
@@ -151,6 +114,7 @@ func checkError(err error){
 	if err != nil{
 		// panic(err)
 		fmt.Fprintf(os.Stderr,"Fatal error: %s ",err.Error())
+		fmt.Println("In CheckError")
 		os.Exit(1)
 	}
 }
