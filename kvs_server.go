@@ -4,8 +4,10 @@ import "fmt"
 import "net"
 import "os"
 import "strings"
+import "encoding/gob"
 
-const BUFF_SIZE int32 = 512
+
+const BUFF_SIZE int64 = 1024
 
 // Create a global "Map" (Key-Value Store) , so that it is available to all clients
 // and the content in it resides untill Server is "ON" , it will help for clients to close their
@@ -17,7 +19,7 @@ func main(){
 service := ":1201"
 
 // Resolve Server Address
-tcpAddr, err := net.ResolveTCPAddr("tcp4",service)
+tcpAddr, err := net.ResolveTCPAddr("ip4",service)
 checkError(err)
 
 listener, err := net.ListenTCP("tcp",tcpAddr)
@@ -48,18 +50,20 @@ func handleClient(conn net.Conn){
 
 	
 	// close connection on exit from method
-	//defer conn.Close()
+	defer conn.Close()
 	
-	var buf[] byte = make([]byte, BUFF_SIZE)
+
 		
 	for{
-		// #test
-		fmt.Println("\nHi")
-
+	
+		//var buf[] byte = make([]byte, 1024)//BUFF_SIZE)
+		
 		var err error
-
+		var request string
+		
 		// Read upto BUFF_SIZE bytes
-		n,err := conn.Read(buf[0:])
+		//n,err := conn.Read(buf[0:])
+		err = gob.NewDecoder(conn).Decode(&request)
 	
 		if err != nil{
 			conn.Write([]byte("Error in 'reading' data at server."))
@@ -70,43 +74,38 @@ func handleClient(conn net.Conn){
 		// Logic at Server
 		// -------------------
 			
-		request := string(buf[0:n])
-		
-		// #test Print Request
-		//fmt.Println("\nRequest ",request, "\n")
+		// Display the Request Received
+		fmt.Println("\nRequest received :- ",request,"\n")
 		
 		comm := strings.Split(request, " ")
 		
 		
 		if comm[0] == "set"{
 			kvs[comm[1]] = comm[2]
-			_, err = conn.Write([]byte(comm[1] + " got added successfully."))
-			checkError(err)
+			//_, err = conn.Write([]byte(kvs[comm[1]] + " got added successfully."))
+			err = gob.NewEncoder(conn).Encode(kvs[comm[1]] + " got added successfully.")
 		}else if comm[0] == "get"{
 			value,status := kvs[comm[1]]
 			if status == true {
-				_, err := conn.Write([]byte(value))
-				checkError(err)
+				err = gob.NewEncoder(conn).Encode(comm[1] + " --> " + value)
+				//_, err := conn.Write([]byte(value))
 			}else{
-				_, err := conn.Write([]byte("Error!!! \nNo key exists."))
-				checkError(err)
-				return
+				err = gob.NewEncoder(conn).Encode("Error!!! \nNo key exists.")
+				//_, err := conn.Write([]byte("Error!!! \nNo key exists."))
 			}
 		}else if comm[0] == "delete"{
 			delete(kvs,comm[1])
-			_, err := conn.Write([]byte(comm[1] + " got deleted."))
-			checkError(err)
+			err = gob.NewEncoder(conn).Encode(comm[1] + " got deleted.")
+			//_, err := conn.Write([]byte(comm[1] + " got deleted."))
 		}
 		
-		
+		checkError(err)
+				
 		if err != nil{
 			conn.Write([]byte("Error Occurred in Server somewhere."))
 			return
 		}
 		
-		fmt.Println("At the End in Server")	
-		conn.Close()
-
 	}
 
 }
