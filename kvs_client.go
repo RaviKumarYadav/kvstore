@@ -4,9 +4,10 @@ import (
 "net"
 "os"
 "fmt"
-"io/ioutil"
+//"io/ioutil"
 "bufio"
 "strings"
+"encoding/gob"
 )
 
 
@@ -47,7 +48,7 @@ webAddr := strings.TrimSpace(read_Terminal())
 
 
 // Resolve Server Address
-tcpAddr,err := net.ResolveTCPAddr("tcp4",webAddr)
+tcpAddr,err := net.ResolveTCPAddr("tcp",webAddr)
 checkError(err)
 
 
@@ -82,18 +83,18 @@ for{
 	if comm[0] == "get" || comm[0] == "set" || comm[0] == "delete" {
 
 		// Send Request
-		_, err = conn.Write([]byte(input))
+		//_, err = conn.Write([]byte(input))
+		err = gob.NewEncoder(conn).Encode(input)
 		checkError(err)
 
-		fmt.Println("\n1")
-
+		var result string
+				
 		// Read Response
-		result,err := ioutil.ReadAll(conn)
+		//result,err := ioutil.ReadAll(conn)
+		err := gob.NewDecoder(conn).Decode(&result)
 		checkError(err)
 
-		fmt.Println("\n2")
-
-		// Printed Message
+		// Print Message
 		fmt.Println("\nResponse ",string(result))	
 	}else{
 		// Print error and Ask for new user input
