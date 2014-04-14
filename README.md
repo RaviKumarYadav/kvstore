@@ -3,7 +3,7 @@ Key Value Store
 
 Store
 -----
-Key-Value store is simply implemented as Map[string]string it is kept at server.
+Key-Value store is simply implemented as Map[string]string , it is kept at server.
 
 
 kvs_client.go
